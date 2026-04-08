@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ScholAR: AI-powered research intelligence that analyzes, critiques, simulates, and makes research decisions.">
+  <title>ScholAR — Research Decision Engine</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔬</text></svg>">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-icon">S</div>
+        <div class="logo-text">
+          <h1>ScholAR</h1>
+          <p>Research Decision Engine</p>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Capabilities</div>
+        <div class="sidebar-item">
+          <span class="sidebar-item-icon">🔬</span>
+          <div>
+            <div class="sidebar-item-label">Full Analysis</div>
+            <div class="sidebar-item-desc">Insights + Critique</div>
+          </div>
+        </div>
+        <div class="sidebar-item">
+          <span class="sidebar-item-icon">💥</span>
+          <div>
+            <div class="sidebar-item-label">Break Papers</div>
+            <div class="sidebar-item-desc">Find failure modes</div>
+          </div>
+        </div>
+        <div class="sidebar-item">
+          <span class="sidebar-item-icon">⚡</span>
+          <div>
+            <div class="sidebar-item-label">Simulation</div>
+            <div class="sidebar-item-desc">Stress-test research</div>
+          </div>
+        </div>
+        <div class="sidebar-item">
+          <span class="sidebar-item-icon">🎯</span>
+          <div>
+            <div class="sidebar-item-label">Trust Score</div>
+            <div class="sidebar-item-desc">Credibility assessment</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="status-dot"></div>
+        <span>Groq · gpt-oss-20b</span>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-status" id="header-status">Ready for analysis</div>
+        <div class="header-version">v2.0</div>
+      </header>
+
+      <!-- Content -->
+      <div class="content-area">
+        <div class="content-inner">
+          <!-- Input Card -->
+          <div class="input-card">
+            <div class="input-label">
+              <div class="input-label-icon">S</div>
+              <span>Research Query</span>
+            </div>
+            <textarea
+              id="research-input"
+              placeholder="Enter a research topic, paper title, or paste an abstract to analyze..."
+              rows="3"
+            ></textarea>
+            <div class="input-footer">
+              <div class="input-hint">
+                <kbd>Ctrl+Enter</kbd> to submit
+              </div>
+              <button id="submit-btn" class="btn-primary">
+                Run Analysis <span style="font-size:16px">→</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Results Area (dynamically rendered) -->
+          <div id="results-area"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
