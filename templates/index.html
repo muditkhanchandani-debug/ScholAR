@@ -6,7 +6,7 @@
   <meta name="description" content="ScholAR: AI-powered research intelligence that analyzes, critiques, simulates, and makes research decisions.">
   <title>ScholAR — Research Decision Engine</title>
   <link rel="stylesheet" href="/static/style.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔬</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2215%22 fill=%22%238b2335%22/><text x=%2250%22 y=%2268%22 font-size=%2260%22 fill=%22white%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-weight=%22bold%22>S</text></svg>">
 </head>
 <body>
   <div class="app-layout">
@@ -23,28 +23,28 @@
       <div class="sidebar-section">
         <div class="sidebar-section-title">Capabilities</div>
         <div class="sidebar-item">
-          <span class="sidebar-item-icon">🔬</span>
+          <span class="sidebar-item-icon">A</span>
           <div>
             <div class="sidebar-item-label">Full Analysis</div>
             <div class="sidebar-item-desc">Insights + Critique</div>
           </div>
         </div>
         <div class="sidebar-item">
-          <span class="sidebar-item-icon">💥</span>
+          <span class="sidebar-item-icon">B</span>
           <div>
             <div class="sidebar-item-label">Break Papers</div>
             <div class="sidebar-item-desc">Find failure modes</div>
           </div>
         </div>
         <div class="sidebar-item">
-          <span class="sidebar-item-icon">⚡</span>
+          <span class="sidebar-item-icon">S</span>
           <div>
             <div class="sidebar-item-label">Simulation</div>
             <div class="sidebar-item-desc">Stress-test research</div>
           </div>
         </div>
         <div class="sidebar-item">
-          <span class="sidebar-item-icon">🎯</span>
+          <span class="sidebar-item-icon">T</span>
           <div>
             <div class="sidebar-item-label">Trust Score</div>
             <div class="sidebar-item-desc">Credibility assessment</div>
@@ -95,6 +95,12 @@
         </div>
       </div>
     </div>
+
+    <!-- Logs Panel -->
+    <aside class="logs-panel">
+      <div class="logs-header">System Log</div>
+      <div class="logs-container" id="logs-container"></div>
+    </aside>
   </div>
 
   <script src="/static/app.js"></script>

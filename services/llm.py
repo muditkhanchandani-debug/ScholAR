@@ -41,7 +41,9 @@ async def call_llm(
     model = model or _get_model()
 
     if not api_key:
-        raise ValueError("GROQ_API_KEY is not set. Add it to your .env file.")
+        raise ValueError(
+            "GROQ_API_KEY is not set. Add it to your .env file to enable analysis."
+        )
 
     headers = {
         "Authorization": f"Bearer {api_key}",
@@ -63,20 +65,51 @@ async def call_llm(
 
     logger.info(f"[LLM] Calling {model} | msg_len={len(user_message)}")
 
-    async with httpx.AsyncClient(timeout=60.0) as client:
-        response = await client.post(GROQ_API_URL, headers=headers, json=payload)
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.post(GROQ_API_URL, headers=headers, json=payload)
+    except httpx.TimeoutException:
+        logger.error("[LLM] Request timed out after 60 seconds")
+        raise RuntimeError(
+            "The AI service took too long to respond. Please try again."
+        )
+    except httpx.ConnectError:
+        logger.error("[LLM] Could not connect to Groq API")
+        raise RuntimeError(
+            "Could not connect to the AI service. Check your internet connection."
+        )
+    except httpx.HTTPError as e:
+        logger.error(f"[LLM] HTTP error: {e}")
+        raise RuntimeError(
+            f"Network error communicating with AI service: {type(e).__name__}"
+        )
 
-        if response.status_code != 200:
-            error_detail = response.text[:300]
-            logger.error(f"[LLM] API error {response.status_code}: {error_detail}")
+    if response.status_code != 200:
+        error_detail = response.text[:300]
+        logger.error(f"[LLM] API error {response.status_code}: {error_detail}")
+
+        if response.status_code == 401:
+            raise RuntimeError("Invalid API key. Check your GROQ_API_KEY in .env.")
+        elif response.status_code == 429:
+            raise RuntimeError("Rate limit exceeded. Please wait a moment and try again.")
+        elif response.status_code == 503:
+            raise RuntimeError("AI service is temporarily unavailable. Try again shortly.")
+        else:
             raise RuntimeError(
-                f"Groq API returned status {response.status_code}: {error_detail}"
+                f"AI service returned error {response.status_code}. Please try again."
             )
 
+    try:
         data = response.json()
         content = data["choices"][0]["message"]["content"]
-        logger.info(f"[LLM] Response received | len={len(content)}")
-        return content
+    except (KeyError, IndexError, TypeError) as e:
+        logger.error(f"[LLM] Malformed API response: {e}")
+        raise RuntimeError(
+            "AI service returned an unexpected response format. Please try again."
+        )
+
+    logger.info(f"[LLM] Response received | len={len(content)}")
+    return content
 
 
 def clean_json_response(raw: str) -> str:
@@ -115,8 +148,16 @@ async def call_llm_json(
     """
     Call LLM and parse the response as JSON.
     Retries once with a correction prompt if parsing fails.
+    Returns a fallback dict if all attempts fail (never raises).
     """
-    raw = await call_llm(system_prompt, user_message, **kwargs)
+    from utils.response_formatter import FALLBACK_RESPONSE
+
+    try:
+        raw = await call_llm(system_prompt, user_message, **kwargs)
+    except (ValueError, RuntimeError) as e:
+        logger.error(f"[LLM] Call failed: {e}")
+        return {**FALLBACK_RESPONSE, "summary": str(e)}
+
     cleaned = clean_json_response(raw)
 
     # First attempt
@@ -140,7 +181,7 @@ async def call_llm_json(
         result = json.loads(retry_cleaned)
         logger.info("[LLM] JSON parsed on retry")
         return result
-    except (json.JSONDecodeError, Exception) as e:
+    except (json.JSONDecodeError, ValueError, RuntimeError) as e:
         logger.error(f"[LLM] Retry failed: {e}")
 
     # Last resort: extract JSON from original response
@@ -149,4 +190,6 @@ async def call_llm_json(
         logger.info("[LLM] Extracted JSON from messy response")
         return extracted
 
-    raise RuntimeError("AI returned an invalid response format. Please try again.")
+    # Final fallback — never crash
+    logger.error("[LLM] All parse attempts failed. Returning fallback response.")
+    return {**FALLBACK_RESPONSE, "summary": "AI returned an unparseable response. Please try again."}

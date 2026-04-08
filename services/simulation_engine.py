@@ -86,6 +86,59 @@ def run_heuristic_simulation(
     }
 
 
+def compute_decision_influence(heuristic_result: dict) -> dict:
+    """
+    Translate heuristic simulation results into decision influence factors.
+
+    Returns a dict with:
+    - recommendation_modifier: "supports_read" | "supports_caution" | "supports_skip"
+    - factors: list of string explanations for why the simulation supports this
+    - robustness_score: the raw robustness score (0-100)
+    - real_world_score: the raw real-world reliability score (0-100)
+    """
+    robustness = heuristic_result.get("robustness", {})
+    real_world = heuristic_result.get("real_world", {})
+    noise = heuristic_result.get("noise", {})
+    data_size = heuristic_result.get("data_size", {})
+    bias = heuristic_result.get("bias", {})
+
+    rob_score = robustness.get("score", 50)
+    rob_label = robustness.get("label", "Moderate")
+    rw_score = real_world.get("score", 50)
+    rw_label = real_world.get("label", "Uncertain")
+
+    factors = []
+
+    # Determine recommendation modifier
+    if rob_score >= 70:
+        modifier = "supports_read"
+        factors.append(f"Simulation robustness is {rob_label} ({rob_score}/100) — findings are likely stable under varying conditions")
+    elif rob_score >= 40:
+        modifier = "supports_caution"
+        factors.append(f"Simulation robustness is {rob_label} ({rob_score}/100) — results hold under controlled conditions but may degrade in real-world settings")
+    else:
+        modifier = "supports_skip"
+        factors.append(f"Simulation robustness is {rob_label} ({rob_score}/100) — findings are likely unreliable under realistic conditions")
+
+    # Real-world reliability factor
+    factors.append(f"Real-world reliability: {rw_label} ({rw_score}/100)")
+
+    # Flag critical individual factors
+    if noise.get("severity") == "critical":
+        factors.append(f"Noise sensitivity is critical (impact: {noise.get('impact', '?')}%) — high risk of performance degradation in noisy environments")
+    if data_size.get("severity") == "critical":
+        factors.append(f"Data sensitivity is critical (impact: {data_size.get('impact', '?')}%) — poor generalization with limited data")
+    if bias.get("severity") == "critical":
+        factors.append(f"Bias vulnerability is critical (impact: {bias.get('impact', '?')}%) — systematic errors may compromise validity")
+
+    return {
+        "recommendation_modifier": modifier,
+        "factors": factors,
+        "robustness_score": rob_score,
+        "real_world_score": rw_score,
+    }
+
+
 def _severity(impact: int) -> str:
     if impact >= 70:
         return "critical"
